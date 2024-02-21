@@ -10,10 +10,10 @@ with tripdata as
 select
     -- identifiers
     {{ dbt_utils.generate_surrogate_key(['vendor_id', 'pickup_datetime']) }} as tripid,
-    cast(vendor_id as integer) as vendorid,
-    cast(rate_code as integer) as ratecodeid,
-    cast(pickup_location_id as integer) as  pickup_locationid,
-    cast(dropoff_location_id as integer) as dropoff_locationid,
+    {{ dbt.safe_cast("vendor_id", api.Column.translate_type("integer")) }} as vendorid,
+    {{ dbt.safe_cast("rate_code", api.Column.translate_type("integer")) }} as ratecodeid,
+    {{ dbt.safe_cast("pickup_location_id", api.Column.translate_type("integer")) }} as pickup_locationid,
+    {{ dbt.safe_cast("dropoff_location_id", api.Column.translate_type("integer")) }} as dropoff_locationid,
     
     -- timestamps
     cast(pickup_datetime as timestamp) as pickup_datetime,
@@ -23,7 +23,7 @@ select
     store_and_fwd_flag,
     cast(passenger_count as integer) as passenger_count,
     cast(trip_distance as numeric) as trip_distance,
-    1 as trip_type,
+    {{ dbt.safe_cast(1, api.Column.translate_type("integer")) }} as trip_type,
     
     -- payment info
     cast(fare_amount as numeric) as fare_amount,
@@ -34,7 +34,7 @@ select
     cast(0 as numeric) as ehail_fee,
     cast(imp_surcharge as numeric) as improvement_surcharge,
     cast(total_amount as numeric) as total_amount,
-    coalesce(cast(payment_type as integer),0) as payment_type,
+    coalesce({{ dbt.safe_cast("payment_type", api.Column.translate_type("integer")) }},0) as payment_type,
     {{ get_payment_type_description('payment_type') }} as payment_type_description
 from tripdata
 where rn = 1
